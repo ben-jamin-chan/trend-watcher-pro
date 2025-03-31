@@ -1,0 +1,35 @@
+## Important Notes
+1. **MongoDB Setup**: 
+For the database, I recommend using MongoDB Atlas, which provides a free tier that's perfect for learning. * DONE * -> MongoDB Atlas -> server folder 
+
+2. **Firebase Configuration**: 
+You'll need to create a Firebase project and update the configuration in `src/context/AuthContext.jsx` with your own Firebase credentials. * DONE * -> Create Firebase project
+
+3. **Google Trends API**: 
+Google doesn't provide an official API for Trends data. The `google-trends-api` package is an unofficial wrapper that scrapes Google Trends. Be aware that this might violate Google's Terms of Service in some cases. * DONE * -> trends.js & api.js
+
+4. **Production Deployment**: 
+When you're ready to deploy, consider using Vercel for the frontend and either Vercel Serverless Functions or Render for the backend.
+
+== 18 MARCH 2025 ==
+- TrendComparsion.jsx is selecting all trends when clicked
+    -> Fixed by moving from searching id to keywords/unique keywords
+
+== 19 MARCH 2025 ==
+- Make savedTrendsList.jsx selectable to display at Saved Trends
+- To fix notification, favorite (star), and delete button in Saved Trends
+- To fix sort function in Saved Trends
+- User should not be able to see Get Started or Log in after already logged in
+
+== 22 MARCH 2025 ==
+- I am using Firebase. Now I would like to implement the functions for the below code. I would like the users to be able to select the trends that they saved if they want to receive updates on their selected saved trends every 15 minutes, 1 hour, 3 hours, 6 hours, or 24 hours and etc.
+
+- The notification is sent to the user's own notification in the web page and will be displayed in the web app when user is logged into their profile on the top right corner of the page
+
+<button onClick={() => handleNotificationToggle(trend.keyword)} className={p-2 rounded-full ${ trend.notificationsEnabled ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-400 hover:text-gray-500" }} title={trend.notificationsEnabled ? "Disable notifications" : "Enable notifications"} > <BellIcon className="w-5 h-5" /> </button>
+
+onToggleNotification={handleToggleNotification}
+
+== 26 MARCH 2025 ==
+- Mock data is working, please convert into a real API data
+- Add more countries and replace the mock data with real data if possible
