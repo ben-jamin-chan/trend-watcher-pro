@@ -33,3 +33,7 @@ onToggleNotification={handleToggleNotification}
 == 26 MARCH 2025 ==
 - Mock data is working, please convert into a real API data
 - Add more countries and replace the mock data with real data if possible
+
+== 7 APRIL 2025 ==
+- Maybe buy a working 100% API
+- Fix chart to make it working, could be current API is not giving good data for the chart
