@@ -1,6 +1,7 @@
 // routes/trends.js
 import express from "express"
 import googleTrends from "google-trends-api"
+import { searchTrends, getRealTimeTrends } from "../services/trendsService.js"
 
 const router = express.Router()
 
@@ -121,8 +122,17 @@ router.get("/search", async (req, res) => {
     }
 
     try {
+      // Add a small delay to avoid hitting rate limits
+      await delay(1000);
+      
       // Try to get real data from Google Trends
       const results = await googleTrends.interestOverTime(options)
+      
+      // Check if the response looks like HTML (rate limited or error response)
+      if (typeof results === 'string' && results.trim().startsWith('<')) {
+        throw new Error('API returned HTML instead of JSON (likely rate limited)');
+      }
+      
       return res.json(JSON.parse(results))
     } catch (apiError) {
       console.error("Error from Google Trends API:", apiError)
@@ -164,8 +174,17 @@ router.get("/geo", async (req, res) => {
     }
 
     try {
+      // Add a small delay to avoid hitting rate limits
+      await delay(1000);
+      
       // Try to get real data from Google Trends
       const results = await googleTrends.interestByRegion(options)
+      
+      // Check if the response looks like HTML (rate limited or error response)
+      if (typeof results === 'string' && results.trim().startsWith('<')) {
+        throw new Error('API returned HTML instead of JSON (likely rate limited)');
+      }
+      
       const parsedResults = JSON.parse(results)
 
       // Log the structure to help with debugging
@@ -236,6 +255,37 @@ router.get("/geo", async (req, res) => {
     })
   }
 })
+
+// GET real-time trends data
+router.get("/realtime", async (req, res) => {
+  try {
+    const { geo, category, hl } = req.query;
+
+    if (!geo) {
+      return res.status(400).json({ message: "Geo parameter is required for real-time trends" });
+    }
+
+    console.log(`Fetching real-time trends for geo: ${geo}, category: ${category || 'all'}`);
+
+    try {
+      // Get real-time trends data from our service
+      const results = await getRealTimeTrends({ geo, category, hl });
+      return res.json(results);
+    } catch (error) {
+      console.error("Error fetching real-time trends:", error);
+      return res.status(500).json({
+        message: "Failed to fetch real-time trends",
+        error: error.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error in /realtime route:", error);
+    res.status(500).json({
+      message: "Failed to fetch real-time trends",
+      error: error.message,
+    });
+  }
+});
 
 // Keep your other routes...
 

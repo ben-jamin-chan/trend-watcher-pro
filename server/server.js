@@ -20,18 +20,37 @@ app.use(express.json())
 
 // Routes
 app.use("/api/trends", trendsRoutes)
-app.use("/api/users", userRoutes)
-app.use("/api/saved-trends", savedTrendsRoutes)
-app.use("/api/notifications", notificationsRoutes) // Add this line
 
-// Connect to MongoDB
-mongoose
- .connect(process.env.MONGODB_URI)
- .then(() => {
-   console.log("Connected to MongoDB Atlas")
-   app.listen(PORT, () => console.log(`Server running on port: ${PORT}`))
-   
-   // Start scheduled tasks after server is running
-   startScheduledTasks()
- })
- .catch((error) => console.log("Error connecting to MongoDB:", error.message))
+// MongoDB connection (optional for testing trends functionality)
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/trend-tracker-pro'
+
+if (MONGODB_URI && MONGODB_URI !== 'undefined') {
+  // Connect to MongoDB
+  mongoose
+   .connect(MONGODB_URI)
+   .then(() => {
+     console.log("Connected to MongoDB")
+     // Only add database-dependent routes if MongoDB is connected
+     app.use("/api/users", userRoutes)
+     app.use("/api/saved-trends", savedTrendsRoutes)
+     app.use("/api/notifications", notificationsRoutes)
+     
+     // Start scheduled tasks after database is connected
+     startScheduledTasks()
+   })
+   .catch((error) => {
+     console.log("Warning: Could not connect to MongoDB:", error.message)
+     console.log("Server will run without database functionality")
+   })
+} else {
+  console.log("No MongoDB URI configured. Running without database functionality.")
+}
+
+// Start server regardless of database connection
+app.listen(PORT, () => {
+  console.log(`Server running on port: ${PORT}`)
+  console.log("Google Trends API routes available at /api/trends")
+  if (!MONGODB_URI || MONGODB_URI === 'undefined') {
+    console.log("Note: Database-dependent features (users, saved trends, notifications) are disabled")
+  }
+})
