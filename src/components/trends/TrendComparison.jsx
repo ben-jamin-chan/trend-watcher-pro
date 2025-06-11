@@ -157,6 +157,7 @@ function TrendComparison({ trends, userPreferences }) {
               title={`Comparing ${selectedTrends.length} Trend${selectedTrends.length !== 1 ? "s" : ""}`}
               timeRange={userPreferences?.defaultTimeRange || "1m"}
               isComparison={true}
+              keyword={selectedTrends.map(t => t.keyword).join(', ')}
             />
           </div>
         ) : (

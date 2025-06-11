@@ -3,8 +3,10 @@
 import { useEffect, useRef, useContext } from "react"
 import Chart from "chart.js/auto"
 import { ThemeContext } from "../../context/ThemeContext"
+import RealTimeTrendChart from './RealTimeTrendChart.jsx'
+import ExportButton from '../ExportButton'
 
-function TrendChart({ data, title, timeRange, isComparison = false }) {
+function TrendChart({ data, title, timeRange, isComparison = false, keyword }) {
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
   const { darkMode } = useContext(ThemeContext)
@@ -425,12 +427,26 @@ function TrendChart({ data, title, timeRange, isComparison = false }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
-      <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-        {title || "Trend Interest Over Time"}
-      </h3>
-      <div className="h-[400px]"> {/* Fixed height container */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          {title || "Trend Interest Over Time"}
+        </h3>
+        <ExportButton
+          data={data}
+          keyword={keyword}
+          dataType={isComparison ? 'comparison' : 'timeline'}
+          elementId="trend-chart-container"
+          customOptions={{ timeRange }}
+        />
+      </div>
+      <div id="trend-chart-container" className="h-[400px]"> {/* Fixed height container */}
         <canvas ref={chartRef}></canvas>
       </div>
+      <RealTimeTrendChart 
+  geo="US" 
+  category="all" 
+  refreshInterval={60000} // Refresh every minute
+/>
     </div>
   )
 }

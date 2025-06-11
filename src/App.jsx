@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Profile from "./pages/Profile"
+import ExportDashboard from "./pages/ExportDashboard"
 import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
@@ -35,6 +36,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/export"
+                  element={
+                    <ProtectedRoute>
+                      <ExportDashboard />
                     </ProtectedRoute>
                   }
                 />

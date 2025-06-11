@@ -7,6 +7,7 @@ import trendsRoutes from "./routes/trends.js"
 import userRoutes from "./routes/user.js"
 import savedTrendsRoutes from "./routes/savedTrends.js"
 import notificationsRoutes from "./routes/notifications.js" // Add this line
+import exportRoutes from "./routes/export.js" // Add export routes
 import { startScheduledTasks } from "./scheduledTasks.js" // Add this line
 
 dotenv.config()
@@ -20,6 +21,7 @@ app.use(express.json())
 
 // Routes
 app.use("/api/trends", trendsRoutes)
+app.use("/api/export", exportRoutes) // Add export routes
 
 // MongoDB connection (optional for testing trends functionality)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/trend-tracker-pro'

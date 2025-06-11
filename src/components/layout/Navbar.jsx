@@ -23,7 +23,7 @@ function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                Trend Tracker Pro
+                Trend Watcher Pro
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -34,12 +34,20 @@ function Navbar() {
                 Home
               </Link>
               {currentUser && (
-                <Link
-                  to="/dashboard"
-                  className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Dashboard
-                </Link>
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/export"
+                    className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Export
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -116,13 +124,22 @@ function Navbar() {
               Home
             </Link>
             {currentUser && (
-              <Link
-                to="/dashboard"
-                className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/export"
+                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Export
+                </Link>
+              </>
             )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">

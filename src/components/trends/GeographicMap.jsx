@@ -5,9 +5,10 @@ import { ThemeContext } from "../../context/ThemeContext"
 import { Search } from "lucide-react"
 import * as d3 from "d3"
 import * as topojson from "topojson-client"
+import ExportButton from '../ExportButton'
 
 // Standalone map component with guaranteed rendering
-function GeographicMap({ data, title }) {
+function GeographicMap({ data, title, keyword }) {
   const { darkMode } = useContext(ThemeContext)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -408,7 +409,15 @@ function GeographicMap({ data, title }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
-      <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">{title || "Geographic Interest"}</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title || "Geographic Interest"}</h3>
+        <ExportButton
+          data={mapData}
+          keyword={keyword}
+          dataType="geographic"
+          elementId="geographic-map-container"
+        />
+      </div>
 
       {error && (
         <div className="text-red-500 dark:text-red-400 mb-4 text-center p-2 bg-red-50 dark:bg-red-900/20 rounded">
@@ -416,7 +425,7 @@ function GeographicMap({ data, title }) {
         </div>
       )}
 
-      <div className="relative" style={{ minHeight: "400px" }}>
+      <div id="geographic-map-container" className="relative" style={{ minHeight: "400px" }}>
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-800/50 z-10 rounded-lg">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 dark:border-indigo-400"></div>

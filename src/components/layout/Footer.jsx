@@ -4,7 +4,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="text-gray-500 dark:text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} Google Trend Tracker. All rights reserved.
+            &copy; {new Date().getFullYear()} Trend Watcher Pro. All rights reserved.
           </div>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-6">

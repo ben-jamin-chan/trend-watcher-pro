@@ -592,6 +592,7 @@ function Dashboard() {
                 data={getChartData()} 
                 title={getChartTitle()} 
                 timeRange={getEffectiveTimeRange()}
+                keyword={currentTrend?.keyword || selectedTrend}
               />
 
             {/* md:grid-cols-2 */}
@@ -641,6 +642,7 @@ function Dashboard() {
                 data={currentTrend.data} 
                 title={`Trend for ${currentTrend.keyword}`} 
                 timeRange={getEffectiveTimeRange()}
+                keyword={currentTrend.keyword}
               />
 
               {/* <GeographicMap data={currentTrend.geoData} title={`Geographic Interest for ${currentTrend.keyword}`} /> */}
@@ -664,6 +666,7 @@ function Dashboard() {
               data={currentTrend.data} 
               title={`Trend for ${currentTrend.keyword}`} 
               timeRange={getEffectiveTimeRange()}
+              keyword={currentTrend.keyword}
             />
           )}
           

@@ -361,28 +361,22 @@ export const deleteSavedTrend = async (keyword, userId) => {
 // Function to search trends
 export const searchTrends = async (searchParams) => {
   try {
-    const { keyword, timeRange, geo, category } = searchParams
-    let url = `${API_URL}/trends/search?keyword=${encodeURIComponent(keyword)}`
-    if (timeRange) url += `&timeRange=${timeRange}`
-    if (geo) url += `&geo=${geo}`
-    if (category) url += `&category=${category}`
+    const { keyword, timeRange, geo, category } = searchParams;
+    let url = `${API_URL}/trends/search?keyword=${encodeURIComponent(keyword)}`;
+    if (timeRange) url += `&timeRange=${timeRange}`;
+    if (geo) url += `&geo=${geo}`;
+    if (category) url += `&category=${category}`;
 
-    console.log("Searching trends with URL:", url)
+    console.log("Searching trends with URL:", url);
 
-    const result = await safeFetch(url)
-    console.log("Search result:", result)
-    return result
+    const result = await safeFetch(url);
+    console.log("Search result:", result);
+    return result;
   } catch (error) {
-    console.error("Error searching trends:", error)
-
-    // Return mock data based on the time range
-    return {
-      default: {
-        timelineData: generateMockTimelineData(searchParams.timeRange || "1m"),
-      },
-    }
+    console.error("Error searching trends:", error);
+    throw error; // Let the caller handle the error
   }
-}
+};
 
 // Function to toggle trend notification
 export const toggleTrendNotification = async (keyword, userId) => {
@@ -403,21 +397,20 @@ export const toggleTrendNotification = async (keyword, userId) => {
 // Function to get geographic data
 export const getGeoData = async (keyword, timeRange) => {
   try {
-    let url = `${API_URL}/trends/geo?keyword=${encodeURIComponent(keyword)}`
+    let url = `${API_URL}/trends/geo?keyword=${encodeURIComponent(keyword)}`;
     if (timeRange) {
-      url += `&timeRange=${timeRange}`
+      url += `&timeRange=${timeRange}`;
     }
 
-    console.log("Fetching geo data with URL:", url)
+    console.log("Fetching geo data with URL:", url);
 
-    const response = await safeFetch(url)
-    return response
+    const response = await safeFetch(url);
+    return response;
   } catch (error) {
-    console.error("Error fetching geo data:", error)
-    // Generate mock geo data based on keyword
-    return generateMockGeoData(keyword)
+    console.error("Error fetching geo data:", error);
+    throw error; // Let the caller handle the error
   }
-}
+};
 
 // Helper function to generate mock geo data that varies by keyword
 const generateMockGeoData = (keyword) => {
@@ -649,4 +642,129 @@ export const createOrUpdateUser = async (userData) => {
     throw error
   }
 }
+
+// Function to get real-time trends
+export const getRealTimeTrends = async (params) => {
+  try {
+    const { geo, category, hl } = params;
+    
+    if (!geo) {
+      throw new Error("Geo parameter is required for real-time trends");
+    }
+    
+    let url = `${API_URL}/trends/realtime?geo=${geo}`;
+    if (category) url += `&category=${category}`;
+    if (hl) url += `&hl=${hl}`;
+    
+    console.log("Fetching real-time trends with URL:", url);
+    
+    const result = await safeFetch(url);
+    console.log("Real-time trends result:", result);
+    return result;
+  } catch (error) {
+    console.error("Error fetching real-time trends:", error);
+    throw error; // Let the caller handle the error
+  }
+};
+
+// Export functions for data export
+export const exportDataToCSV = async (data, options = {}) => {
+  try {
+    const response = await fetch(`${API_URL}/export/csv`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        type: options.type || 'timeline',
+        keyword: options.keyword,
+        filename: options.filename
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Export failed with status ${response.status}`);
+    }
+
+    // Download the file
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = options.filename || 'trend-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error exporting CSV via API:', error);
+    throw error;
+  }
+};
+
+export const exportDataToPDF = async (data, options = {}) => {
+  try {
+    const response = await fetch(`${API_URL}/export/pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        options
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Export failed with status ${response.status}`);
+    }
+
+    // Download the file
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = options.filename || 'trend-report.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error exporting PDF via API:', error);
+    throw error;
+  }
+};
+
+export const getExportFormats = async () => {
+  try {
+    const response = await fetch(`${API_URL}/export/formats`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to get export formats: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching export formats:', error);
+    // Return default formats as fallback
+    return {
+      formats: [
+        { id: 'csv', name: 'CSV', description: 'Comma-separated values file' },
+        { id: 'pdf', name: 'PDF Report', description: 'Comprehensive PDF report with charts' }
+      ],
+      dataTypes: [
+        { id: 'timeline', name: 'Timeline Data', description: 'Trend data over time' },
+        { id: 'geographic', name: 'Geographic Data', description: 'Regional interest data' },
+        { id: 'comparison', name: 'Comparison Data', description: 'Multiple keywords comparison' }
+      ]
+    };
+  }
+};
 
