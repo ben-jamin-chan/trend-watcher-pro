@@ -343,15 +343,28 @@ export const getSavedTrends = async (userId) => {
 // Function to save a trend
 export const saveTrend = async (trendData) => {
   try {
-    return await safeFetch(`${API_URL}/saved-trends`, {
+    console.log("API: Sending save trend request to:", `${API_URL}/saved-trends`)
+    console.log("API: Trend data being sent:", trendData)
+    
+    const result = await safeFetch(`${API_URL}/saved-trends`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(trendData),
     })
+    
+    console.log("API: Save trend successful, result:", result)
+    return result
   } catch (error) {
-    console.error("Error saving trend:", error)
+    console.error("API: Error saving trend:", error)
+    console.error("API: Full error details:", {
+      message: error.message,
+      stack: error.stack,
+      url: `${API_URL}/saved-trends`,
+      trendData
+    })
+    
     // Return mock success response with the data that was attempted to be saved
     return { ...trendData, id: "local-" + Date.now(), message: "Saved locally (offline mode)" }
   }
@@ -360,7 +373,7 @@ export const saveTrend = async (trendData) => {
 // Function to delete a saved trend
 export const deleteSavedTrend = async (keyword, userId) => {
   try {
-    return await safeFetch(`${API_URL}/saved-trends/keyword/${encodeURIComponent(keyword)}`, {
+    return await safeFetch(`${API_URL}/saved-trends/keyword/${encodeURIComponent(keyword)}?userId=${userId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

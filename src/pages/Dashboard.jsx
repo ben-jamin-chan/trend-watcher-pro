@@ -214,16 +214,27 @@ function Dashboard() {
   }
 
   const handleSaveTrend = async () => {
-    if (!currentTrend || !currentUser) return
+    if (!currentTrend || !currentUser) {
+      console.error("Cannot save trend: missing currentTrend or currentUser", { currentTrend, currentUser })
+      setError("Please log in to save trends")
+      return
+    }
 
     try {
       setLoading(true)
+      setError(null)
+
+      console.log("Starting save trend process for:", currentTrend.keyword)
+      console.log("User ID:", currentUser.uid)
+      console.log("API URL being used:", API_URL)
 
       // Get fresh data with user's preferred time range
       const trendData = await searchTrends({
         keyword: currentTrend.keyword,
         timeRange: userPreferences.defaultTimeRange,
       })
+
+      console.log("Got fresh trend data:", trendData)
 
       const formattedData = formatTrendData(trendData)
 
@@ -235,13 +246,19 @@ function Dashboard() {
         data: formattedData,
       }
 
-      await saveTrend(trendToSave)
+      console.log("Saving trend data:", trendToSave)
+
+      const result = await saveTrend(trendToSave)
+      console.log("Save trend result:", result)
+
+      // Show success message
+      setError(`Successfully saved trend "${currentTrend.keyword}"!`)
 
       // Refresh the saved trends list
       await fetchSavedTrends()
     } catch (err) {
-      setError("Failed to save trend")
-      console.error(err)
+      console.error("Error saving trend:", err)
+      setError("Failed to save trend: " + err.message)
     } finally {
       setLoading(false)
     }
