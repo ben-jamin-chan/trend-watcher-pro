@@ -2,7 +2,19 @@
 // Safely get the API URL with fallback
 const getApiUrl = () => {
   try {
-    return process.env.REACT_APP_API_URL || "http://localhost:5001/api"
+    // Check if we're in production environment
+    const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost'
+    
+    if (process.env.REACT_APP_API_URL) {
+      return process.env.REACT_APP_API_URL
+    }
+    
+    // Auto-detect production URL
+    if (!isDevelopment && window.location.origin.includes('onrender.com')) {
+      return `${window.location.origin}/api`
+    }
+    
+    return "http://localhost:5001/api"
   } catch (error) {
     console.warn("Error accessing environment variables, using fallback URL")
     return "http://localhost:5001/api"
@@ -12,6 +24,9 @@ const getApiUrl = () => {
 const API_URL = getApiUrl()
 
 console.log("API URL being used:", API_URL)
+console.log("Current hostname:", window.location.hostname)
+console.log("Current origin:", window.location.origin)
+console.log("NODE_ENV:", process.env.NODE_ENV)
 
 // Update the DEFAULT_GEO_DATA to include country names
 const DEFAULT_GEO_DATA = {

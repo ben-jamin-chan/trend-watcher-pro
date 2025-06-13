@@ -18,7 +18,25 @@ import {
 } from "../services/api"
 
 // Add this near the top of the file, after the imports
-const API_URL = "http://localhost:5001/api"
+const getApiUrl = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost'
+  
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL
+  }
+  
+  // Auto-detect production URL
+  if (!isDevelopment && window.location.origin.includes('onrender.com')) {
+    return `${window.location.origin}/api`
+  }
+  
+  return "http://localhost:5001/api"
+}
+
+const API_URL = getApiUrl()
+
+console.log("Dashboard: API URL being used:", API_URL)
+console.log("Dashboard: Current location:", window.location.href)
 
 function Dashboard() {
   const { currentUser } = useContext(AuthContext)
