@@ -14,18 +14,27 @@ import { startScheduledTasks } from "./scheduledTasks.js" // Add this line
 
 dotenv.config()
 
+console.log('Starting server initialization...')
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
 const PORT = process.env.PORT || 5001
 
+console.log(`PORT configured as: ${PORT}`)
+console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`)
+
 // Middleware
 app.use(cors())
 app.use(express.json())
 
+console.log('Middleware configured')
+
 // Serve static files from the React app build
 app.use(express.static(path.join(__dirname, '../dist')))
+
+console.log('Static file serving configured')
 
 // Routes
 app.use("/api/trends", trendsRoutes)
@@ -64,8 +73,9 @@ app.get('*', (req, res) => {
 })
 
 // Start server regardless of database connection
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port: ${PORT}`)
+  console.log(`Server bound to 0.0.0.0:${PORT}`)
   console.log("Google Trends API routes available at /api/trends")
   if (!MONGODB_URI || MONGODB_URI === 'undefined') {
     console.log("Note: Database-dependent features (users, saved trends, notifications) are disabled")

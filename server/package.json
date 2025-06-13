@@ -18,8 +18,10 @@
     "mongoose": "^7.0.3",
     "node-cron": "^3.0.3",
     "csv-writer": "^1.6.0",
-    "puppeteer": "^21.11.0",
     "fs-extra": "^11.2.0"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^21.11.0"
   },
   "config": {
     "puppeteer_skip_chromium_download": "true"
