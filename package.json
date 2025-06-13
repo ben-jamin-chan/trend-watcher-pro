@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "cd server && npm install && npm start"
+    "start": "cd server && node start.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
