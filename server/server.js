@@ -5,12 +5,13 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import path from "path"
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 import trendsRoutes from "./routes/trends.js"
 import userRoutes from "./routes/user.js"
 import savedTrendsRoutes from "./routes/savedTrends.js"
-import notificationsRoutes from "./routes/notifications.js" // Add this line
-import exportRoutes from "./routes/export.js" // Add export routes
-import { startScheduledTasks } from "./scheduledTasks.js" // Add this line
+import notificationsRoutes from "./routes/notifications.js"
+import exportRoutes from "./routes/export.js"
+import { startScheduledTasks } from "./scheduledTasks.js"
 
 dotenv.config()
 
@@ -38,18 +39,29 @@ console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`)
 
 // Middleware
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
 console.log('Middleware configured')
 
 // Serve static files from the React app build
-app.use(express.static(path.join(__dirname, '../dist')))
+const distPath = path.join(__dirname, '../dist');
+const indexPath = path.join(distPath, 'index.html');
+
+// Check if dist folder exists
+if (fs.existsSync(distPath)) {
+  console.log('Dist folder found, serving static files from:', distPath);
+  app.use(express.static(distPath));
+} else {
+  console.warn('Dist folder not found at path:', distPath);
+  console.warn('Frontend assets will not be served. Run "npm run build" to create the dist folder.');
+}
 
 console.log('Static file serving configured')
 
 // Routes
 app.use("/api/trends", trendsRoutes)
-app.use("/api/export", exportRoutes) // Add export routes
+app.use("/api/export", exportRoutes)
 
 // MongoDB connection (optional for testing trends functionality)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/trend-tracker-pro'
@@ -76,12 +88,32 @@ if (MONGODB_URI && MONGODB_URI !== 'undefined') {
   console.log("No MongoDB URI configured. Running without database functionality.")
 }
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Catch all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, '../dist/index.html'))
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('Frontend not built. Run "npm run build" first.');
+    }
+  } else {
+    res.status(404).json({ error: 'API endpoint not found' });
   }
-})
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.stack);
+  res.status(500).json({
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+  });
+});
 
 // Start server regardless of database connection
 app.listen(PORT, '0.0.0.0', () => {

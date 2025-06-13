@@ -283,14 +283,22 @@ function Dashboard() {
       const result = await saveTrend(trendToSave)
       console.log("Save trend result:", result)
 
-      // Show success message
-      setSuccessMessage(`Successfully saved trend "${currentTrend.keyword}"!`)
+      // Show success message with more visibility
+      const successMsg = `✅ Successfully saved trend "${currentTrend.keyword}"!`;
+      setSuccessMessage(successMsg);
+      
+      // Also show an alert for more visibility
+      window.alert(successMsg);
 
       // Refresh the saved trends list
       await fetchSavedTrends()
+      
+      // Switch to the saved trends tab to show the updated list
+      setActiveTab("saved");
     } catch (err) {
       console.error("Error saving trend:", err)
       setError("Failed to save trend: " + err.message)
+      window.alert("Error saving trend: " + err.message);
     } finally {
       setLoading(false)
     }
@@ -563,8 +571,9 @@ function Dashboard() {
       )}
 
       {loading && (
-        <div className="flex justify-center my-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 dark:border-indigo-400"></div>
+        <div className="flex justify-center items-center my-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 dark:border-indigo-400 mr-3"></div>
+          <span className="text-indigo-600 dark:text-indigo-300 font-medium">Processing your request...</span>
         </div>
       )}
 
@@ -724,8 +733,11 @@ function Dashboard() {
                 </h2>
                 <button
                   onClick={handleSaveTrend}
-                  className="bg-indigo-600 dark:bg-indigo-700 text-white py-2 px-4 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
+                  className="bg-indigo-600 dark:bg-indigo-700 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 text-lg font-medium flex items-center"
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                  </svg>
                   Save Trend
                 </button>
               </div>

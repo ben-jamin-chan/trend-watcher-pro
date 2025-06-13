@@ -166,11 +166,33 @@ export const formatTrendData = (apiData, timeRange) => {
       }))
     }
 
-    // Format the data
-    return apiData.default.timelineData.map((point) => ({
-      date: point.formattedTime,
-      value: point.value[0],
-    }))
+    // Format the data with standardized date format
+    return apiData.default.timelineData.map((point) => {
+      let formattedDate = point.formattedTime;
+      
+      // Ensure date format is consistent
+      try {
+        // If the date is in YYYY-MM-DD format, keep it
+        if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return {
+            date: formattedDate,
+            value: point.value[0],
+          };
+        }
+        
+        // Otherwise, try to convert it to YYYY-MM-DD
+        const date = new Date(point.time * 1000);
+        formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      } catch (e) {
+        console.warn("Date formatting error:", e);
+        // Keep the original format if conversion fails
+      }
+      
+      return {
+        date: formattedDate,
+        value: point.value[0],
+      };
+    })
   } catch (error) {
     console.error("Error formatting trend data:", error)
 

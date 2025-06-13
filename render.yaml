@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: trend-tracker-pro
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: MONGODB_URI
+        sync: false # This should be set in the Render.com dashboard
+    healthCheckPath: /health 
