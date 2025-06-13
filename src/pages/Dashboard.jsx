@@ -84,9 +84,19 @@ function Dashboard() {
   // Fetch saved trends when component mounts or when user preferences change
   useEffect(() => {
     if (currentUser) {
-      fetchSavedTrends().then(() => {
+      console.log("=== DASHBOARD USEEFFECT ===")
+      console.log("Current user:", currentUser)
+      console.log("User ID:", currentUser.uid)
+      console.log("Default time range:", userPreferences.defaultTimeRange)
+      
+      fetchSavedTrends().then((trends) => {
+        console.log("=== FETCH SAVED TRENDS COMPLETED ===")
+        console.log("Trends returned:", trends)
+        console.log("Current savedTrends state:", savedTrends)
         debugSavedTrends()
       })
+    } else {
+      console.log("No current user, skipping fetch saved trends")
     }
   }, [currentUser, userPreferences.defaultTimeRange]) // Add defaultTimeRange as dependency
 

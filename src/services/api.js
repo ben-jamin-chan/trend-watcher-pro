@@ -332,14 +332,34 @@ export const markAllNotificationsAsRead = async (userId) => {
 // Function to get saved trends for a user
 export const getSavedTrends = async (userId) => {
   try {
+    console.log("=== GET SAVED TRENDS API CALL ===")
     console.log("API: Fetching saved trends for user:", userId)
     console.log("API: Using URL:", `${API_URL}/saved-trends/user/${userId}`)
+    console.log("API: Current API_URL:", API_URL)
     
     const result = await safeFetch(`${API_URL}/saved-trends/user/${userId}`)
+    
+    console.log("=== GET SAVED TRENDS RESPONSE ===")
     console.log("API: Saved trends result:", result)
+    console.log("API: Number of trends found:", result?.length || 0)
+    
+    if (result && result.length > 0) {
+      result.forEach((trend, index) => {
+        console.log(`Trend ${index + 1}:`, {
+          keyword: trend.keyword,
+          userId: trend.userId,
+          timeRange: trend.timeRange,
+          notificationsEnabled: trend.notificationsEnabled,
+          lastUpdated: trend.lastUpdated
+        })
+      })
+    } else {
+      console.log("No saved trends found in response")
+    }
     
     return result
   } catch (error) {
+    console.error("=== GET SAVED TRENDS ERROR ===")
     console.error("API: Error fetching saved trends:", error)
     console.error("API: Full error details:", {
       message: error.message,

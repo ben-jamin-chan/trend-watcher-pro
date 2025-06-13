@@ -5,9 +5,34 @@ import SavedTrend from "../models/SavedTrend.js"
 // Get all saved trends for a user
 router.get("/user/:userId", async (req, res) => {
   try {
+    console.log("=== GET SAVED TRENDS REQUEST ===")
+    console.log("Request params:", req.params)
+    console.log("User ID from params:", req.params.userId)
+    
     const savedTrends = await SavedTrend.find({ userId: req.params.userId })
+    
+    console.log("=== DATABASE QUERY RESULTS ===")
+    console.log("Number of saved trends found:", savedTrends.length)
+    
+    if (savedTrends.length > 0) {
+      savedTrends.forEach((trend, index) => {
+        console.log(`DB Trend ${index + 1}:`, {
+          _id: trend._id,
+          keyword: trend.keyword,
+          userId: trend.userId,
+          timeRange: trend.timeRange,
+          notificationsEnabled: trend.notificationsEnabled,
+          lastUpdated: trend.lastUpdated
+        })
+      })
+    } else {
+      console.log("No saved trends found in database for userId:", req.params.userId)
+    }
+    
     res.json(savedTrends)
   } catch (error) {
+    console.error("=== GET SAVED TRENDS ERROR ===")
+    console.error("Error fetching saved trends:", error)
     res.status(500).json({ message: error.message })
   }
 })
@@ -15,8 +40,18 @@ router.get("/user/:userId", async (req, res) => {
 // Save a new trend
 router.post("/", async (req, res) => {
   try {
+    console.log("=== SAVE TREND REQUEST RECEIVED ===")
+    console.log("Request body:", req.body)
+    console.log("Request headers:", req.headers)
+    
     const { userId, keyword, timeRange, currentValue, data, notificationsEnabled, notificationFrequency } = req.body
 
+    if (!userId || !keyword) {
+      console.log("Missing required fields:", { userId, keyword })
+      return res.status(400).json({ message: "userId and keyword are required" })
+    }
+
+    console.log(`Checking for existing trend: userId=${userId}, keyword=${keyword}`)
     // Check if this trend already exists by the user
     const existingTrend = await SavedTrend.findOne({ userId, keyword })
 
