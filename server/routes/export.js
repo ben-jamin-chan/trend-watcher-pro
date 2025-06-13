@@ -1,9 +1,17 @@
 import express from 'express';
 import { createObjectCsvWriter } from 'csv-writer';
-import puppeteer from 'puppeteer';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Handle Puppeteer import gracefully
+let puppeteer = null;
+try {
+  puppeteer = await import('puppeteer');
+  puppeteer = puppeteer.default;
+} catch (error) {
+  console.warn('Puppeteer not available:', error.message);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,6 +65,10 @@ const generateCSVFromData = async (data, type, filename) => {
 
 // Helper function to generate PDF report
 const generatePDFReport = async (data, options = {}) => {
+  if (!puppeteer) {
+    throw new Error('PDF generation is not available - Puppeteer not installed');
+  }
+  
   const browser = await puppeteer.launch({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
