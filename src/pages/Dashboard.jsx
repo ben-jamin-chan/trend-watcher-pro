@@ -93,45 +93,45 @@ function Dashboard() {
   const fetchSavedTrends = async () => {
     try {
       setLoading(true)
-      const trends = await getSavedTrends(currentUser.uid)
+      setError(null)
       
-      // Update each trend's data with the user's preferred time range
-      const updatedTrends = await Promise.all(trends.map(async (trend) => {
-        try {
-          // Get fresh data with user's preferred time range
-          const trendData = await searchTrends({
-            keyword: trend.keyword,
-            timeRange: userPreferences.defaultTimeRange,
-          })
+      console.log("Fetching saved trends for user:", currentUser.uid)
+      const trends = await getSavedTrends(currentUser.uid)
+      console.log("Raw saved trends from API:", trends)
+      
+      if (!trends || trends.length === 0) {
+        console.log("No saved trends found")
+        setSavedTrends([])
+        return []
+      }
 
-          return {
-            ...trend,
-            timeRange: userPreferences.defaultTimeRange,
-            data: formatTrendData(trendData),
-          }
-        } catch (error) {
-          console.error(`Error updating trend data for ${trend.keyword}:`, error)
-          return trend // Keep original data if update fails
+      // Use the stored data directly instead of fetching fresh data to avoid rate limiting
+      const processedTrends = trends.map(trend => {
+        return {
+          ...trend,
+          timeRange: trend.timeRange || userPreferences.defaultTimeRange,
+          data: trend.data || [], // Use stored data
         }
-      }))
+      })
 
-      setSavedTrends(updatedTrends)
+      console.log("Processed saved trends:", processedTrends)
+      setSavedTrends(processedTrends)
 
       // Set the first trend as selected by default if we have trends and no selection
-      if (updatedTrends.length > 0 && !selectedTrend) {
-        setSelectedTrend(updatedTrends[0].keyword)
+      if (processedTrends.length > 0 && !selectedTrend) {
+        setSelectedTrend(processedTrends[0].keyword)
         setCurrentTrend({
-          keyword: updatedTrends[0].keyword,
-          timeRange: userPreferences.defaultTimeRange,
-          data: updatedTrends[0].data,
-          geoData: updatedTrends[0].geoData,
+          keyword: processedTrends[0].keyword,
+          timeRange: processedTrends[0].timeRange,
+          data: processedTrends[0].data,
+          geoData: processedTrends[0].geoData,
         })
       }
 
-      return updatedTrends
+      return processedTrends
     } catch (err) {
-      setError("Failed to fetch saved trends")
-      console.error(err)
+      console.error("Error fetching saved trends:", err)
+      setError("Failed to fetch saved trends: " + err.message)
       return []
     } finally {
       setLoading(false)
@@ -597,6 +597,25 @@ function Dashboard() {
                   : "No trends saved"}
               </p>
             </div>
+          </div>
+
+          <div className="flex justify-end space-x-4">
+            <button
+              onClick={() => {
+                console.log("Manual refresh clicked")
+                fetchSavedTrends().then((trends) => {
+                  console.log("Manual refresh completed, trends:", trends)
+                  if (trends.length === 0) {
+                    setError("No saved trends found. Try saving a trend first.")
+                  } else {
+                    setError(`Refreshed: Found ${trends.length} saved trends`)
+                  }
+                })
+              }}
+              className="bg-gray-600 dark:bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-900"
+            >
+              🔄 Refresh Saved Trends
+            </button>
           </div>
 
           {/* <div className="flex justify-end space-x-4">

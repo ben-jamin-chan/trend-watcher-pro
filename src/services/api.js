@@ -332,9 +332,22 @@ export const markAllNotificationsAsRead = async (userId) => {
 // Function to get saved trends for a user
 export const getSavedTrends = async (userId) => {
   try {
-    return await safeFetch(`${API_URL}/saved-trends/user/${userId}`)
+    console.log("API: Fetching saved trends for user:", userId)
+    console.log("API: Using URL:", `${API_URL}/saved-trends/user/${userId}`)
+    
+    const result = await safeFetch(`${API_URL}/saved-trends/user/${userId}`)
+    console.log("API: Saved trends result:", result)
+    
+    return result
   } catch (error) {
-    console.error("Error fetching saved trends:", error)
+    console.error("API: Error fetching saved trends:", error)
+    console.error("API: Full error details:", {
+      message: error.message,
+      stack: error.stack,
+      url: `${API_URL}/saved-trends/user/${userId}`,
+      userId
+    })
+    
     // Return empty array as fallback
     return []
   }
@@ -545,29 +558,15 @@ const generateMockGeoData = (keyword) => {
 // Function to get user preferences
 export const getUserPreferences = async (userId) => {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}`)
+    console.log("API: Fetching user preferences for:", userId)
+    console.log("API: Using URL:", `${API_URL}/users/${userId}`)
+    
+    const response = await safeFetch(`${API_URL}/users/${userId}`)
 
-    if (response.status === 404) {
-      console.log("User not found, creating default preferences")
-      // User doesn't exist yet, return default preferences
-      return {
-        emailNotifications: false,
-        notificationFrequency: "daily",
-        defaultTimeRange: "1m",
-        defaultRegion: "US",
-      }
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `Server responded with status ${response.status}`)
-    }
-
-    const userData = await response.json()
-    console.log("Got user data from API:", userData)
+    console.log("API: Got user data from API:", response)
 
     return (
-      userData.preferences || {
+      response.preferences || {
         emailNotifications: false,
         notificationFrequency: "daily",
         defaultTimeRange: "1m",
@@ -575,8 +574,21 @@ export const getUserPreferences = async (userId) => {
       }
     )
   } catch (error) {
-    console.error("Error fetching user preferences:", error)
-    // Return default preferences as fallback
+    console.error("API: Error fetching user preferences:", error)
+    
+    // If it's a 404, return default preferences
+    if (error.message.includes('404') || error.message.includes('not found')) {
+      console.log("API: User not found, returning default preferences")
+      return {
+        emailNotifications: false,
+        notificationFrequency: "daily",
+        defaultTimeRange: "1m",
+        defaultRegion: "US",
+      }
+    }
+    
+    // For other errors, still return defaults but log the error
+    console.error("API: Returning default preferences due to error:", error.message)
     return {
       emailNotifications: false,
       notificationFrequency: "daily",
