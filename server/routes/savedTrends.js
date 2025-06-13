@@ -52,8 +52,36 @@ router.post("/", async (req, res) => {
     }
 
     console.log(`Checking for existing trend: userId=${userId}, keyword=${keyword}`)
-    // Check if this trend already exists by the user
-    const existingTrend = await SavedTrend.findOne({ userId, keyword })
+    
+    // Check if this trend already exists by the user with timeout
+    let existingTrend
+    try {
+      console.log("Starting database query...")
+      existingTrend = await Promise.race([
+        SavedTrend.findOne({ userId, keyword }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout')), 10000)
+        )
+      ])
+      console.log("Database query completed. Existing trend found:", !!existingTrend)
+      if (existingTrend) {
+        console.log("Existing trend details:", {
+          _id: existingTrend._id,
+          keyword: existingTrend.keyword,
+          userId: existingTrend.userId,
+          lastUpdated: existingTrend.lastUpdated
+        })
+      }
+    } catch (dbError) {
+      console.error("=== DATABASE QUERY ERROR ===")
+      console.error("Error details:", dbError)
+      console.error("Query parameters:", { userId, keyword })
+      return res.status(500).json({ 
+        message: "Database query failed", 
+        error: dbError.message,
+        details: "Unable to check for existing trend"
+      })
+    }
 
     if (existingTrend) {
       // Update existing trend
@@ -71,22 +99,58 @@ router.post("/", async (req, res) => {
         existingTrend.notificationFrequency = notificationFrequency
       }
 
-      await existingTrend.save()
-      return res.status(200).json(existingTrend)
+      console.log("=== UPDATING EXISTING TREND ===")
+      try {
+        const updatedTrend = await existingTrend.save()
+        console.log("Trend updated successfully:", {
+          _id: updatedTrend._id,
+          keyword: updatedTrend.keyword,
+          lastUpdated: updatedTrend.lastUpdated
+        })
+        return res.status(200).json(updatedTrend)
+      } catch (saveError) {
+        console.error("Error saving existing trend:", saveError)
+        return res.status(500).json({ 
+          message: "Failed to update existing trend", 
+          error: saveError.message 
+        })
+      }
     } else {
-      // Create new saved trend
-      const newTrend = new SavedTrend({
-        userId,
-        keyword,
-        timeRange,
-        currentValue,
-        data,
-        notificationsEnabled: notificationsEnabled || false,
-        notificationFrequency: notificationFrequency || "24h",
-      })
+      console.log("=== CREATING NEW TREND ===")
+      try {
+        // Create new saved trend
+        const newTrend = new SavedTrend({
+          userId,
+          keyword,
+          timeRange,
+          currentValue,
+          data,
+          notificationsEnabled: notificationsEnabled || false,
+          notificationFrequency: notificationFrequency || "24h",
+        })
 
-      await newTrend.save()
-      res.status(201).json(newTrend)
+        console.log("Attempting to save new trend...")
+        const savedTrend = await newTrend.save()
+        
+        console.log("=== NEW TREND SAVED SUCCESSFULLY ===")
+        console.log("Saved trend details:", {
+          _id: savedTrend._id,
+          keyword: savedTrend.keyword,
+          userId: savedTrend.userId,
+          timeRange: savedTrend.timeRange,
+          lastUpdated: savedTrend.lastUpdated
+        })
+        
+        res.status(201).json(savedTrend)
+      } catch (saveError) {
+        console.error("=== ERROR CREATING NEW TREND ===")
+        console.error("Save error details:", saveError)
+        return res.status(500).json({ 
+          message: "Failed to create new trend", 
+          error: saveError.message,
+          stack: saveError.stack
+        })
+      }
     }
   } catch (error) {
     console.error("Error saving trend:", error)
