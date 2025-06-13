@@ -45,6 +45,7 @@ function Dashboard() {
   const [savedTrends, setSavedTrends] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
   const [selectedTrend, setSelectedTrend] = useState(null)
   const [userPreferences, setUserPreferences] = useState({
     defaultTimeRange: "1m",
@@ -81,6 +82,25 @@ function Dashboard() {
     })
   }
 
+  // Clear messages after a timeout
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);  // Clear after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+  
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);  // Clear after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   // Fetch saved trends when component mounts or when user preferences change
   useEffect(() => {
     if (currentUser) {
@@ -104,6 +124,7 @@ function Dashboard() {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
       
       console.log("Fetching saved trends for user:", currentUser.uid)
       const trends = await getSavedTrends(currentUser.uid)
@@ -233,6 +254,7 @@ function Dashboard() {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
 
       console.log("Starting save trend process for:", currentTrend.keyword)
       console.log("User ID:", currentUser.uid)
@@ -262,7 +284,7 @@ function Dashboard() {
       console.log("Save trend result:", result)
 
       // Show success message
-      setError(`Successfully saved trend "${currentTrend.keyword}"!`)
+      setSuccessMessage(`Successfully saved trend "${currentTrend.keyword}"!`)
 
       // Refresh the saved trends list
       await fetchSavedTrends()
@@ -533,6 +555,12 @@ function Dashboard() {
           {error}
         </div>
       )}
+      
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-200 rounded">
+          {successMessage}
+        </div>
+      )}
 
       {loading && (
         <div className="flex justify-center my-4">
@@ -618,7 +646,7 @@ function Dashboard() {
                   if (trends.length === 0) {
                     setError("No saved trends found. Try saving a trend first.")
                   } else {
-                    setError(`Refreshed: Found ${trends.length} saved trends`)
+                    setSuccessMessage(`Refreshed: Found ${trends.length} saved trends`)
                   }
                 })
               }}
