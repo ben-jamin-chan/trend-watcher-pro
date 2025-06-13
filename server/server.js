@@ -3,6 +3,8 @@ import express from "express"
 import cors from "cors"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
+import path from "path"
+import { fileURLToPath } from 'url'
 import trendsRoutes from "./routes/trends.js"
 import userRoutes from "./routes/user.js"
 import savedTrendsRoutes from "./routes/savedTrends.js"
@@ -12,12 +14,18 @@ import { startScheduledTasks } from "./scheduledTasks.js" // Add this line
 
 dotenv.config()
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const app = express()
 const PORT = process.env.PORT || 5001
 
 // Middleware
 app.use(cors())
 app.use(express.json())
+
+// Serve static files from the React app build
+app.use(express.static(path.join(__dirname, '../dist')))
 
 // Routes
 app.use("/api/trends", trendsRoutes)
@@ -47,6 +55,13 @@ if (MONGODB_URI && MONGODB_URI !== 'undefined') {
 } else {
   console.log("No MongoDB URI configured. Running without database functionality.")
 }
+
+// Catch all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api/')) {
+    res.sendFile(path.join(__dirname, '../dist/index.html'))
+  }
+})
 
 // Start server regardless of database connection
 app.listen(PORT, () => {
