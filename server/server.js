@@ -3,12 +3,18 @@ import express from "express"
 import cors from "cors"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
+import path from "path"
+import { fileURLToPath } from "url"
 import trendsRoutes from "./routes/trends.js"
 import userRoutes from "./routes/user.js"
 import savedTrendsRoutes from "./routes/savedTrends.js"
 import notificationsRoutes from "./routes/notifications.js" // Add this line
 import exportRoutes from "./routes/export.js" // Add export routes
 import { startScheduledTasks } from "./scheduledTasks.js" // Add this line
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 dotenv.config()
 
@@ -19,23 +25,10 @@ const PORT = process.env.PORT || 5001
 app.use(cors())
 app.use(express.json())
 
-// Root route for testing
-app.get("/", (req, res) => {
-  res.json({
-    message: "Trend Tracker Pro API Server",
-    status: "running",
-    endpoints: {
-      trends: "/api/trends",
-      export: "/api/export",
-      users: "/api/users",
-      savedTrends: "/api/saved-trends",
-      notifications: "/api/notifications"
-    },
-    documentation: "Visit the API endpoints above to access the service"
-  })
-})
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, '../dist')))
 
-// Routes
+// API Routes
 app.use("/api/trends", trendsRoutes)
 app.use("/api/export", exportRoutes) // Add export routes
 
@@ -64,10 +57,16 @@ if (MONGODB_URI && MONGODB_URI !== 'undefined') {
   console.log("No MongoDB URI configured. Running without database functionality.")
 }
 
+// Catch all handler: serve React app for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
+
 // Start server regardless of database connection
 app.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`)
   console.log("Google Trends API routes available at /api/trends")
+  console.log("React app served at root URL")
   if (!MONGODB_URI || MONGODB_URI === 'undefined') {
     console.log("Note: Database-dependent features (users, saved trends, notifications) are disabled")
   }
