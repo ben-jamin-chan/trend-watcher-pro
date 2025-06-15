@@ -19,6 +19,22 @@ const PORT = process.env.PORT || 5001
 app.use(cors())
 app.use(express.json())
 
+// Root route for testing
+app.get("/", (req, res) => {
+  res.json({
+    message: "Trend Tracker Pro API Server",
+    status: "running",
+    endpoints: {
+      trends: "/api/trends",
+      export: "/api/export",
+      users: "/api/users",
+      savedTrends: "/api/saved-trends",
+      notifications: "/api/notifications"
+    },
+    documentation: "Visit the API endpoints above to access the service"
+  })
+})
+
 // Routes
 app.use("/api/trends", trendsRoutes)
 app.use("/api/export", exportRoutes) // Add export routes
