@@ -25,8 +25,20 @@ const PORT = process.env.PORT || 5001
 app.use(cors())
 app.use(express.json())
 
-// Serve static files from the React app build directory
-app.use(express.static(path.join(__dirname, '../dist')))
+// Determine the correct path to the dist directory
+const distPath = path.join(__dirname, '../dist')
+console.log("Looking for React build files at:", distPath)
+
+// Check if dist directory exists
+import { existsSync } from 'fs'
+if (existsSync(distPath)) {
+  console.log("✓ React build directory found")
+  // Serve static files from the React app build directory
+  app.use(express.static(distPath))
+} else {
+  console.log("✗ React build directory not found at:", distPath)
+  console.log("Available files in current directory:", __dirname)
+}
 
 // API Routes
 app.use("/api/trends", trendsRoutes)
@@ -59,7 +71,17 @@ if (MONGODB_URI && MONGODB_URI !== 'undefined') {
 
 // Catch all handler: serve React app for any non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'))
+  const indexPath = path.join(distPath, 'index.html')
+  if (existsSync(indexPath)) {
+    res.sendFile(indexPath)
+  } else {
+    console.log("Error: index.html not found at:", indexPath)
+    res.status(404).json({
+      error: "Frontend not found",
+      message: "React build files are missing. Please check the build process.",
+      expectedPath: indexPath
+    })
+  }
 })
 
 // Start server regardless of database connection
