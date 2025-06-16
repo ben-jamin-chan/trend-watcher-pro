@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import path from "path"
 import { fileURLToPath } from "url"
+import { existsSync } from "fs"
 import trendsRoutes from "./routes/trends.js"
 import userRoutes from "./routes/user.js"
 import savedTrendsRoutes from "./routes/savedTrends.js"
@@ -30,7 +31,6 @@ const distPath = path.join(__dirname, '../dist')
 console.log("Looking for React build files at:", distPath)
 
 // Check if dist directory exists
-import { existsSync } from 'fs'
 if (existsSync(distPath)) {
   console.log("✓ React build directory found")
   // Serve static files from the React app build directory
